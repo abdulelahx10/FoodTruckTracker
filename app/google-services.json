@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "578691852753",
+    "firebase_url": "https://foodtrucktracker-d1feb.firebaseio.com",
+    "project_id": "foodtrucktracker-d1feb",
+    "storage_bucket": "foodtrucktracker-d1feb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578691852753:android:6a63d9135f72e1df",
+        "android_client_info": {
+          "package_name": "com.example.android.foodtrucktracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "578691852753-rg3g0j92gktk4gr31gij0095hrrmconv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.android.foodtrucktracker",
+            "certificate_hash": "4a7875e55df18601c04366a31b0e809c07478b23"
+          }
+        },
+        {
+          "client_id": "578691852753-roi8tn32nvlv0rkn54dlddqv0jf8ub5k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTFc-M2WnYfrpUww5x5dpqLPffrAC7gWw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "578691852753-roi8tn32nvlv0rkn54dlddqv0jf8ub5k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
