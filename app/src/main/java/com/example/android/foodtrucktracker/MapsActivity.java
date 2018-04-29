@@ -1,6 +1,7 @@
 package com.example.android.foodtrucktracker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -12,6 +13,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -32,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
@@ -48,6 +54,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     //Marker mCurrLocationMarker;
     ArrayList<Marker> markers;
 
+    private ImageButton myLocation;
+    private TextView nearestTruck;
+    private LinearLayout nearest;
+
+    private Location myCurrentLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +71,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         trucksRef = database.getReference("Trucks");
         locationsRef = database.getReference("locations");
 
+        myLocation = findViewById(R.id.locationButton);
+        nearestTruck = findViewById(R.id.truck_name);
+        nearest = findViewById(R.id.nearest_truck);
+
+        myLocation.setVisibility(View.GONE);
+
         markers = new ArrayList();
 
         initializeLocationManager();
@@ -67,6 +85,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
 
     }
 
@@ -207,8 +226,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.foodtruckicon);
                     String name = snapshot.child("TruckName").getValue().toString();
-                    String title = snapshot.child("TruckDescription").getValue().toString();
-                    final Marker m = mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Truck name: " + name +" - Description: "+ title).icon(icon));
+                    String desc = snapshot.child("TruckDescription").getValue().toString();
+                    final Marker m = mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Truck name: " + name).snippet("Description: "+ desc).icon(icon));
                     markers.add(m);
                     locLis = locationsRef.child(id).addValueEventListener(new ValueEventListener() {
                         @Override
@@ -265,12 +284,92 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.i("called", "loc null");
 
         }*/
+        myLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(getParent(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+                    return;
+                }
+                Location location = locationManager.getLastKnownLocation(locationProvider);
+                if(location != null) {
+                    Log.i("called", "loc not null");
+
+                    CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(),location.getLongitude()));
+                    mMap.moveCamera(center);
+                    CameraUpdate zoom=CameraUpdateFactory.zoomTo(14);
+                    mMap.animateCamera(zoom);
+                }
+            }
+        });
+
+        locationsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(getParent(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+                    return;
+                }
+                markers.sort(new Comparator<Marker>() {
+                    Location location = locationManager.getLastKnownLocation(locationProvider);
+
+                    @Override
+                    public int compare(Marker a, Marker b) {
+                        Location locationA = new Location("point A");
+                        locationA.setLatitude(a.getPosition().latitude);
+                        locationA.setLongitude(a.getPosition().longitude);
+                        Location locationB = new Location("point B");
+                        locationB.setLatitude(b.getPosition().latitude);
+                        locationB.setLongitude(b.getPosition().longitude);
+                        float distanceOne = location.distanceTo(locationA);
+                        float distanceTwo = location.distanceTo(locationB);
+                        return Float.compare(distanceOne, distanceTwo);
+                    }
+                });
+                if (!markers.isEmpty() && markers.get(0) != null){
+                    if (ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getBaseContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(getParent(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+                        return;
+                    }
+                    //Location myLocation = locationManager.getLastKnownLocation(locationProvider);
+                    if (myLocation == null){
+                        return;
+                    }
+                    Location locationA = new Location("point A");
+                    locationA.setLatitude(markers.get(0).getPosition().latitude);
+                    locationA.setLongitude(markers.get(0).getPosition().longitude);
+
+                    nearestTruck.setText(markers.get(0).getTitle().substring(11) + " - " + myCurrentLocation.distanceTo(locationA)/1000 + " Km"  );
+                }
+                nearest.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(markers.get(0) == null){
+                            return;
+                        }
+                        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(markers.get(0).getPosition().latitude,markers.get(0).getPosition().longitude));
+                        mMap.moveCamera(center);
+                        CameraUpdate zoom=CameraUpdateFactory.zoomTo(14);
+                        mMap.animateCamera(zoom);
+                        markers.get(0).showInfoWindow();
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+            }
+        });
     }
 
 
     @Override
     public void onLocationChanged(Location location) {
         Log.i("called", "onLocationChanged");
+        myCurrentLocation = location;
         /*
         if(mCurrLocationMarker != null){
             mCurrLocationMarker.setPosition(new LatLng(location.getLatitude(),location.getLongitude()));
@@ -281,6 +380,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             ref.child("latitude").setValue(location.getLatitude());
             ref.child("longitude").setValue(location.getLongitude());
         }
+        if (!markers.isEmpty() && markers.get(0) != null){
+            Location locationA = new Location("point A");
+            locationA.setLatitude(markers.get(0).getPosition().latitude);
+            locationA.setLongitude(markers.get(0).getPosition().longitude);
+
+            nearestTruck.setText(markers.get(0).getTitle().substring(11) + " - " + location.distanceTo(locationA)/1000 + " KM away" );
+        }
+        nearest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(markers.get(0) == null){
+                    return;
+                }
+                CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(markers.get(0).getPosition().latitude,markers.get(0).getPosition().longitude));
+                mMap.moveCamera(center);
+                CameraUpdate zoom=CameraUpdateFactory.zoomTo(14);
+                mMap.animateCamera(zoom);
+                markers.get(0).showInfoWindow();
+
+            }
+        });
     }
 
     @Override

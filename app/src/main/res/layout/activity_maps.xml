@@ -1,8 +1,67 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-    android:layout_width="match_parent"
+    tools:context="com.example.android.foodtrucktracker.MapsActivity"
     android:layout_height="match_parent"
-    tools:context="com.example.android.foodtrucktracker.MapsActivity" />
+    android:layout_width="match_parent">
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+         />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|left"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/locationButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1"
+            map:srcCompat="@drawable/my_location_black_192x192" />
+
+        <LinearLayout
+            android:id="@+id/nearest_truck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimaryDarker"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:text="Nearest Truck:"
+                android:textColor="@color/base" />
+
+            <TextView
+                android:id="@+id/truck_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:textColor="@color/white"
+                tools:text="Name - 100 km" />
+        </LinearLayout>
+
+    </LinearLayout>
+</FrameLayout>
+
